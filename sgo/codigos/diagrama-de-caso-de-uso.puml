@@ -1,0 +1,96 @@
+@startuml diagrama-de-caso-de-uso
+title Sistema de Gestão das Olimpíadas - Casos de Uso
+
+left to right direction
+
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 8
+
+skinparam usecase {
+  BackgroundColor #FFFFCC
+  BorderColor #000000
+  ArrowColor #000000
+}
+skinparam actor {
+  BackgroundColor #FFFFFF
+  BorderColor #000000
+}
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #000000
+  BorderStyle dashed
+}
+
+actor "Visitante / Público" as VIS
+actor "Atleta" as ATL
+actor "Árbitro / Oficial" as ARB
+actor "Administrador" as ADM
+
+' Hierarquia de atores: todos podem fazer o que o Visitante faz
+ATL --|> VIS
+ARB --|> VIS
+ADM --|> VIS
+
+rectangle "SGO - Sistema de Gestão das Olimpíadas" {
+
+  ' --- Casos de uso do Administrador ---
+  usecase "Cadastrar\nCompetição" as UC01
+  usecase "Editar\nCompetição" as UC02
+  usecase "Cancelar\nCompetição" as UC03
+  usecase "Alocar Local para\nCompetição" as UC04
+  usecase "Gerenciar Locais" as UC05
+  usecase "Gerar Relatório\nde Medalhas" as UC06
+  usecase "Gerenciar Atletas" as UC07
+
+  ' --- Casos de uso do Atleta ---
+  usecase "Inscrever-se em\nCompetição" as UC08
+  usecase "Cancelar\nInscrição" as UC09
+  usecase "Consultar\nCompetições\nDisponíveis" as UC10
+  usecase "Visualizar\nResultados\nPessoais" as UC11
+
+  ' --- Casos de uso do Árbitro ---
+  usecase "Registrar Resultado\nde Competição" as UC12
+  usecase "Consultar\nCompetições\ndo Dia" as UC13
+
+  ' --- Casos de uso do Visitante ---
+  usecase "Consultar Quadro\nde Medalhas" as UC14
+  usecase "Consultar Resultados\nde Competições" as UC15
+
+  ' --- Casos de uso auxiliares (include/extend) ---
+  usecase "Verificar\nDisponibilidade\nde Local" as UC16
+  usecase "Verificar\nRepresentação\npor País" as UC17
+  usecase "Atualizar Quadro\nde Medalhas" as UC18
+  usecase "Exportar\nRelatório" as UC19
+
+  ' --- Relacionamentos include/extend ---
+  UC01 ..> UC16 : <<include>>
+  UC04 ..> UC16 : <<include>>
+  UC08 ..> UC17 : <<include>>
+  UC18 ..> UC12 : <<extend>>
+  UC06 ..> UC19 : <<extend>>
+}
+
+' --- Associações dos atores ---
+ADM --> UC01
+ADM --> UC02
+ADM --> UC03
+ADM --> UC04
+ADM --> UC05
+ADM --> UC06
+ADM --> UC07
+
+ATL --> UC08
+ATL --> UC09
+ATL --> UC10
+ATL --> UC11
+
+ARB --> UC12
+ARB --> UC13
+
+VIS --> UC14
+VIS --> UC15
+
+@enduml

@@ -1,0 +1,53 @@
+@startuml diagrama-de-pacotes
+title Sistema de Gestão das Olimpíadas - Diagrama de Pacotes
+
+skinparam defaultFontName Arial
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 8
+
+skinparam package {
+  BorderColor #555555
+  FontColor #000000
+  FontSize 13
+  FontStyle bold
+}
+skinparam arrow {
+  Color #333333
+}
+
+package "SGO - Sistema de Gestão das Olimpíadas" #FFFFFF {
+
+  package "view" #A8D8A0
+  package "controller" #F0C030
+  package "dto" #B5CC4F
+  package "mapper" #E8A87C
+  package "facade" #D85C70
+  package "exception" #D0D0D0
+  package "security" #333333
+  package "config" #F0A0C0
+  package "service" #A070C0
+  package "repository" #F0E080
+  package "dao" #70A0E0
+  package "model" #4488CC
+  package "assets" #D880A8
+  package "tests" #70B870
+  package "enum" #90C878
+
+}
+
+view --> controller
+controller --> dto
+controller --> facade
+mapper --> dto
+facade --> exception
+facade --> service
+service --> security
+security --> config
+service --> repository
+service --> assets
+repository --> dao
+dao --> model
+exception ..> model
+
+@enduml

@@ -1,0 +1,106 @@
+@startuml diagrama-de-componentes
+title Sistema de Gestão das Olimpíadas - Diagrama de Componentes
+
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 8
+
+skinparam component {
+  BackgroundColor #DAE8FC
+  BorderColor #6C8EBF
+  FontColor #000000
+  FontSize 12
+}
+skinparam database {
+  BackgroundColor #FFF2CC
+  BorderColor #D6B656
+}
+skinparam actor {
+  BackgroundColor #FFFFFF
+  BorderColor #000000
+}
+skinparam rectangle {
+  BackgroundColor #FAFAFA
+  BorderColor #999999
+  BorderStyle dashed
+}
+
+actor "Administrador" as ADM
+actor "Atleta" as ATL
+actor "Árbitro" as ARB
+
+component "Aplicação Web\n(Painel Admin)" as WEB
+component "Aplicação Mobile\n(Atleta)" as MOBILE
+
+component "API REST\n(Gateway)" as API
+component "Serviço de\nAutenticação\n(JWT / OAuth2)" as AUTH #D5E8D4
+
+rectangle "Módulos de Negócio" {
+  component "Módulo de\nCompetições" as MOD_COMP
+  component "Módulo de\nInscrições" as MOD_INSC
+  component "Módulo de\nAlocação" as MOD_ALOC
+  component "Módulo de\nResultados" as MOD_RES
+  component "Módulo de\nRelatórios" as MOD_REL
+}
+
+' --- Interfaces providas pelos módulos (lollipop) ---
+interface "ICompeticao" as ICOMP
+interface "IInscricao" as IINSC
+interface "IAlocacao" as IALOC
+interface "IResultado" as IRES
+interface "IRelatorio" as IREL
+interface "IAuth" as IAUTH
+
+MOD_COMP -- ICOMP
+MOD_INSC -- IINSC
+MOD_ALOC -- IALOC
+MOD_RES  -- IRES
+MOD_REL  -- IREL
+AUTH     -- IAUTH
+
+' Camada de persistência intermediária
+component "Camada de\nPersistência\n(Spring Data / JPA)" as PERSIST
+
+component "Serviço de\nNotificações\n(Email)" as NOTIF #D5E8D4
+component "Serviço de\nEmail Externo\n(SMTP)" as EMAIL #E1D5E7
+
+database "PostgreSQL\n(Banco de Dados)" as DB
+
+' --- Clientes ---
+ADM --> WEB
+ATL --> MOBILE
+ARB --> WEB
+
+' --- Clientes para API ---
+WEB --> API : HTTPS
+MOBILE --> API : HTTPS
+
+' --- API consome interfaces ---
+API ..> IAUTH
+API ..> ICOMP
+API ..> IINSC
+API ..> IALOC
+API ..> IRES
+API ..> IREL
+
+' --- Módulos para persistência ---
+MOD_COMP --> PERSIST
+MOD_INSC --> PERSIST
+MOD_ALOC --> PERSIST
+MOD_RES  --> PERSIST
+MOD_REL  --> PERSIST
+PERSIST --> DB : JDBC / TCP
+
+' --- Notificações ---
+MOD_INSC --> NOTIF : HTTP
+MOD_RES  --> NOTIF : HTTP
+NOTIF --> EMAIL : SMTPS
+
+' --- Dependências entre módulos via interfaces ---
+MOD_INSC ..> IALOC : verifica disponibilidade
+MOD_RES  ..> IINSC : consulta inscritos
+MOD_REL  ..> IRES  : lê resultados
+
+@enduml

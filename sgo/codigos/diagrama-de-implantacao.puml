@@ -1,0 +1,92 @@
+@startuml diagrama-de-implantacao
+title Sistema de Gestão das Olimpíadas - Diagrama de Implantação
+
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 8
+
+skinparam node {
+  BackgroundColor #FFF8DC
+  BorderColor #E67E22
+  FontColor #000000
+  FontSize 12
+}
+skinparam component {
+  BackgroundColor #D5E8D4
+  BorderColor #82B366
+  FontColor #000000
+}
+skinparam artifact {
+  BackgroundColor #FFFFFF
+  BorderColor #888888
+}
+skinparam database {
+  BackgroundColor #DAE8FC
+  BorderColor #6C8EBF
+}
+skinparam actor {
+  BackgroundColor #FFFFFF
+  BorderColor #000000
+}
+
+actor "Administrador" as ADM
+actor "Atleta" as ATL
+actor "Árbitro" as ARB
+
+node "<<device>>\nDispositivo do Usuário\n(Navegador / Smartphone)" as CLIENT {
+  component "Aplicação Web\n(Frontend)" as FE
+  component "Aplicação Mobile" as MOB
+  artifact "frontend.bundle.js" as FE_ART
+  artifact "sgo-mobile.apk" as MOB_ART
+}
+
+node "<<executionEnvironment>>\nServidor Web\n(Nginx)" as WEB_SERVER {
+  component "Servidor de Estáticos" as STATIC
+  artifact "frontend.zip" as STATIC_ART
+}
+
+node "<<executionEnvironment>>\nServidor de Aplicação\n(Spring Boot - Porta 8080)" as APP_SERVER {
+  component "API REST" as API
+  component "Módulo de\nCompetições" as MC
+  component "Módulo de\nInscrições" as MI
+  component "Módulo de\nAlocação" as MA
+  component "Módulo de\nResultados" as MR
+  component "Módulo de\nRelatórios" as MRL
+  artifact "sgo-app.jar" as APP_ART
+}
+
+node "<<executionEnvironment>>\nServidor de Autenticação\n(OAuth2 / JWT)" as AUTH_SERVER {
+  component "Auth Service" as AUTH
+  artifact "sgo-auth.jar" as AUTH_ART
+}
+
+node "<<executionEnvironment>>\nServidor de Notificações\n(Email Service)" as NOTIF_SERVER {
+  component "Notification Service" as NOTIF
+  artifact "sgo-notif.jar" as NOTIF_ART
+}
+
+node "<<device>>\nServidor de Banco de Dados\n(PostgreSQL - Porta 5432)" as DB_SERVER {
+  database "sgo_db" as DB
+}
+
+' --- Usuários para clientes ---
+ADM --> CLIENT
+ATL --> CLIENT
+ARB --> CLIENT
+
+' --- Carregamento de estáticos do frontend ---
+FE  --> WEB_SERVER : HTTPS\n(porta 443)\nestáticos
+
+' --- Chamadas de API (FE e Mobile) ---
+FE  --> APP_SERVER : HTTPS\n(REST / 443)
+MOB --> APP_SERVER : HTTPS\n(REST / 443)
+
+' --- App Server para outros servidores ---
+APP_SERVER --> AUTH_SERVER  : HTTPS
+APP_SERVER --> DB_SERVER    : JDBC / TCP\n(porta 5432)
+APP_SERVER --> NOTIF_SERVER : HTTPS
+NOTIF_SERVER --> [SMTP externo] : SMTPS\n(porta 587)
+
+@enduml

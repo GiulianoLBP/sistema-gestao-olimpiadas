@@ -1,0 +1,132 @@
+@startuml diagrama-de-classes
+title Sistema de Gestão das Olimpíadas - Diagrama de Classes
+
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 8
+
+skinparam class {
+  BackgroundColor #FFFFFC
+  BorderColor #2C3E50
+  ArrowColor #2C3E50
+  HeaderBackgroundColor #2C3E50
+  HeaderFontColor #FFFFFF
+}
+
+enum StatusCompeticao {
+  AGENDADA
+  EM_ANDAMENTO
+  CONCLUIDA
+  CANCELADA
+}
+
+enum StatusInscricao {
+  ATIVA
+  CANCELADA
+}
+
+enum TipoMedalha {
+  OURO
+  PRATA
+  BRONZE
+}
+
+class Modalidade {
+  - id: Long
+  - nome: String
+  - descricao: String
+}
+
+class Competicao {
+  - id: Long
+  - nome: String
+  - data: LocalDate
+  - horario: LocalTime
+  - status: StatusCompeticao
+  + getAtletasInscritos(): List<Atleta>
+}
+
+class Atleta {
+  - id: Long
+  - nome: String
+  - dataNascimento: LocalDate
+  - numeroRegistro: String
+  + getCompeticoes(): List<Competicao>
+}
+
+class Pais {
+  - id: Long
+  - nome: String
+  - sigla: String
+  - bandeira: String
+  + getTotalMedalhas(): int
+  + getMedalhasOuro(): int
+  + getMedalhasPrata(): int
+  + getMedalhasBronze(): int
+}
+
+class Local {
+  - id: Long
+  - nome: String
+  - endereco: String
+  - capacidade: int
+  + verificarDisponibilidade(data: LocalDate, horario: LocalTime): boolean
+}
+
+class Inscricao {
+  - id: Long
+  - dataInscricao: LocalDateTime
+  - status: StatusInscricao
+}
+
+class Resultado {
+  - id: Long
+  - dataRegistro: LocalDateTime
+}
+
+class Classificacao {
+  - posicao: int
+}
+
+class Medalha {
+  - id: Long
+  - tipo: TipoMedalha
+}
+
+' --- Relacionamentos estruturais ---
+Competicao "*" --> "1" Modalidade : pertence a
+Competicao "1" *--> "*" Inscricao : possui
+Competicao "*" --> "1" Local : realizada em
+Competicao "1" --> "0..1" Resultado : gera
+
+Atleta "1" --> "*" Inscricao : realiza
+Inscricao "*" --> "1" Pais : representa
+
+' Resultado contém classificações; cada classificação refere-se a uma Inscricao
+Resultado "1" *--> "*" Classificacao : possui
+Classificacao "*" --> "1" Inscricao : referente a
+
+' Medalha deriva da Classificacao (tipo OURO/PRATA/BRONZE conforme posicao)
+Classificacao "1" --> "0..1" Medalha : origina
+
+Competicao --> StatusCompeticao
+Inscricao --> StatusInscricao
+Medalha --> TipoMedalha
+
+note right of Atleta
+  Regra de negócio:
+  um atleta só pode representar
+  um país por Modalidade
+  (validada via Inscricao + Pais)
+end note
+
+note bottom of Medalha
+  País, Atleta e Competição da medalha
+  são derivados via:
+  Medalha → Classificacao → Inscricao
+  (→ Atleta, → Pais, → Competicao)
+end note
+
+@enduml
